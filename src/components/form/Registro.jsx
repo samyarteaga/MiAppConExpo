@@ -6,20 +6,69 @@ import {
   Platform,
   StyleSheet,
   TouchableOpacity,
+  Alert,
+  ActivityIndicator,
+  Button,
 } from "react-native";
-import {useState} from 'react';
+import { useState } from "react";
+import api, { USER } from "../../api/api";
+import { storeData, getData } from "../../utils/utils";
 
 const Registro = () => {
-    const [nombres, setNombre] = useState('');
-    const changeNombres = (valor) => {
-        setNombre(valor);
-        console.log(valor);
+  const [nombres, setNombre] = useState("");
+  const changeNombres = (valor) => {
+    setNombre(valor);
+    console.log(valor);
+  };
+  const [documentos, setDocumento] = useState("");
+  const changeDocumentos = (valor) => {
+    setDocumento(valor);
+    console.log(valor);
+  };
+  const [celular, setCelular] = useState("");
+  const changeCelular = (valor) => {
+    setCelular(valor);
+    console.log(valor);
+  };
+  const [email, setEmail] = useState("");
+  const changeEmail = (valor) => {
+    setEmail(valor);
+    console.log(valor);
+  };
+  const [loading, setLoading] = useState(false);
+
+  const guardar = async () => {
+    if (nombres && documentos && celular && email) {
+      setLoading(true);
+      const data = {
+        nombres,
+        documentos,
+        celular,
+        email,
+      };
+      const res = await api.post(USER, data);
+      console.log(res);
+      setLoading(false);
+      await storeData('user',res.user);
+      setNombre("");
+      setDocumento("");
+      setCelular("");
+      setEmail("");
+      Alert.alert("Éxito", "Se guardó la información");
+    } else {
+      Alert.alert("Error", "Debe llenar todos los campos");
     }
-    const [documentos, setDocumento] = useState('');
-    const changeDocumentos = (valor) => {
-        setDocumento(valor);
-        console.log(valor);
-    }
+  };
+
+const  obtenerData = async() => {
+  const data = await getData('user');
+  console.log(data);
+  setNombre(data.nombres);
+  setDocumento(data.documentos);
+  setCelular(data.celular);
+  setEmail(data.email);
+}
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.body}>
@@ -28,9 +77,10 @@ const Registro = () => {
         </View>
         <View>
           <View style={styles.contentInput}>
-            <TextInput placeholder="Nombre completo" 
-            onChangeText={(value) => changeNombres(value)}
-            value={nombres}
+            <TextInput
+              placeholder="Nombre completo"
+              onChangeText={(value) => changeNombres(value)}
+              value={nombres}
             />
           </View>
           <View style={styles.contentInput}>
@@ -42,17 +92,33 @@ const Registro = () => {
             />
           </View>
           <View style={styles.contentInput}>
-            <TextInput placeholder="Celular" keyboardType="phone-pad" />
+            <TextInput
+              placeholder="Celular"
+              keyboardType="phone-pad"
+              onChangeText={(value) => changeCelular(value)}
+              value={celular}
+            />
           </View>
           <View style={styles.contentInput}>
-            <TextInput placeholder="E-mail" keyboardType="email-address" />
+            <TextInput
+              placeholder="E-mail"
+              keyboardType="email-address"
+              onChangeText={(value) => changeEmail(value)}
+              value={email}
+            />
           </View>
           <View style={styles.contentBtn}>
-            <TouchableOpacity style={styles.btn} onPress={() => action()}>
-              <Text style={styles.text}>Guardar</Text>
+            <TouchableOpacity style={styles.btn} onPress={() => guardar()}>
+              <View style={{ flexDirection: "row" }}>
+                <Text style={styles.text}>Guardar</Text>
+                {loading && <ActivityIndicator color="#FFFFFF" />}
+              </View>
             </TouchableOpacity>
           </View>
         </View>
+      </View>
+      <View>
+        <Button title="Obtener datos" onPress={() => obtenerData()}/>
       </View>
     </SafeAreaView>
   );
@@ -95,6 +161,7 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 18,
     fontWeight: "500",
+    marginRight: 5,
   },
 });
 
